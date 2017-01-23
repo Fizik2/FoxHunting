@@ -1,0 +1,60 @@
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context="com.hunting.fox.foxhunting.MenuActivity"
+    >
+
+    <LinearLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_centerInParent="true"
+        android:orientation="vertical">
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="60dp"
+            android:text="@string/startPlay"
+            android:textAlignment="center"
+            android:gravity="center"
+            android:background="@color/cast_intro_overlay_button_background_color"
+            android:paddingStart="10dp"
+            android:paddingEnd="10dp"
+            android:textSize="20sp"
+            android:onClick="onPlay"
+            android:clickable="true" />
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="60dp"
+            android:text="@string/settings"
+            android:textAlignment="center"
+            android:gravity="center"
+            android:background="@color/cast_intro_overlay_button_background_color"
+            android:paddingStart="10dp"
+            android:paddingEnd="10dp"
+            android:layout_marginTop="20dp"
+            android:textSize="20sp"
+            android:clickable="true"
+            android:onClick="onSettings" />
+
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="60dp"
+            android:text="@string/exit"
+            android:textAlignment="center"
+            android:gravity="center"
+            android:background="@color/cast_intro_overlay_button_background_color"
+            android:paddingStart="10dp"
+            android:paddingEnd="10dp"
+            android:layout_marginTop="20dp"
+            android:textSize="20sp"
+            android:clickable="true"
+            android:onClick="onExit" />
+
+
+
+    </LinearLayout>
+
+</RelativeLayout>
