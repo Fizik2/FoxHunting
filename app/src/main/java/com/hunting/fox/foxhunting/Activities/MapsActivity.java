@@ -3,6 +3,10 @@ package com.hunting.fox.foxhunting.Activities;
 import android.Manifest;
 import android.content.DialogInterface;
 import android.content.pm.PackageManager;
+import android.hardware.Sensor;
+import android.hardware.SensorEvent;
+import android.hardware.SensorEventListener;
+import android.hardware.SensorManager;
 import android.location.Location;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.FragmentActivity;
@@ -10,6 +14,9 @@ import android.os.Bundle;
 import android.support.v7.app.AlertDialog;
 import android.util.Log;
 import android.view.View;
+import android.view.animation.Animation;
+import android.view.animation.RotateAnimation;
+import android.widget.ImageView;
 
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
@@ -29,14 +36,16 @@ import com.hunting.fox.foxhunting.Settings;
 import java.util.Random;
 
 public class MapsActivity extends FragmentActivity implements
-        OnMapReadyCallback, GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener, LocationListener {
+        OnMapReadyCallback, GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener, LocationListener, SensorEventListener {
 
+
+    private ImageView image;
+    private float currentDegree = 0f;
+    private SensorManager mSensorManager;
 
     private GoogleMap mMap;
     private SupportMapFragment mMapFragment;
     private static final String LOG_TAG = "MapActivity";
-    private static final int MY_PERMISSIONS_REQUEST_ACCESS_FINE_LOCATION = 2;
-    private static final int MY_PERMISSIONS_REQUEST_ACCESS_COARSE_LOCATION = 4;
 
     LocationRequest mLocationRequest;
     GoogleApiClient mGoogleApiClient;
@@ -56,52 +65,18 @@ public class MapsActivity extends FragmentActivity implements
         mMapFragment = (SupportMapFragment) getSupportFragmentManager().findFragmentById(R.id.map);
         mMapFragment.getMapAsync(this);
 
+
+        image = (ImageView) findViewById(R.id.imageViewCompass);
+
+
+        // initialize your android device sensor capabilities
+        mSensorManager = (SensorManager) getSystemService(SENSOR_SERVICE);
     }
 
     private void init() {
-        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED
-                && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-
-            ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.ACCESS_FINE_LOCATION},
-                    MY_PERMISSIONS_REQUEST_ACCESS_FINE_LOCATION);
-
-            ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.ACCESS_FINE_LOCATION},
-                    MY_PERMISSIONS_REQUEST_ACCESS_COARSE_LOCATION);
-
-            Log.e(LOG_TAG, "Alert! There no permissions!");
-            return;
-        }
-
         mMap.getUiSettings().setCompassEnabled(true);
-
         mMap.getUiSettings().setMyLocationButtonEnabled(Settings.isPointer);
         mMap.setMyLocationEnabled(Settings.isPointer);
-
-    }
-
-
-    //TODO: Check rightness of checking permissions
-    @Override
-    public void onRequestPermissionsResult(int requestCode, String permissions[], int[] grantResults) {
-        switch (requestCode) {
-            case MY_PERMISSIONS_REQUEST_ACCESS_COARSE_LOCATION: {
-                if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                    //TODO: something need?
-                } else {
-                    Log.e(LOG_TAG, "Alert! Denied permission of coarse location!");
-                }
-                return;
-            }
-
-            case MY_PERMISSIONS_REQUEST_ACCESS_FINE_LOCATION: {
-                if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                    //TODO: something need?
-                } else {
-                    Log.e(LOG_TAG, "Alert! Denied permission of fine location!");
-                }
-                return;
-            }
-        }
     }
 
 
@@ -140,10 +115,6 @@ public class MapsActivity extends FragmentActivity implements
         mLocationRequest.setPriority(LocationRequest.PRIORITY_BALANCED_POWER_ACCURACY);
         //mLocationRequest.setSmallestDisplacement(0.1F); //1/10 meter
 
-        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-            // TODO: Consider calling
-            return;
-        }
         LocationServices.FusedLocationApi.requestLocationUpdates(mGoogleApiClient, mLocationRequest, this);
     }
 
@@ -252,5 +223,46 @@ public class MapsActivity extends FragmentActivity implements
             return null;
         }
         return new LatLng(Math.toDegrees(lat2), Math.toDegrees(lon2));
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+
+        if(Settings.isCompass) {
+            image.setVisibility(View.VISIBLE);
+            mSensorManager.registerListener(this, mSensorManager.getDefaultSensor(Sensor.TYPE_ORIENTATION),
+                    SensorManager.SENSOR_DELAY_GAME);
+        } else {
+            image.setVisibility(View.INVISIBLE);
+        }
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        if(Settings.isCompass) {
+            mSensorManager.unregisterListener(this);
+        }
+    }
+
+    @Override
+    public void onSensorChanged(SensorEvent event) {
+
+        // get the angle around the z-axis rotated
+        float degree = Math.round(event.values[0]);
+        // create a rotation animation (reverse turn degree degrees)
+        RotateAnimation ra = new RotateAnimation(currentDegree, -degree, Animation.RELATIVE_TO_SELF, 0.5f, Animation.RELATIVE_TO_SELF, 0.5f);
+
+        ra.setDuration(210);
+        ra.setFillAfter(true);
+        image.startAnimation(ra);
+        currentDegree = -degree;
+
+    }
+
+    @Override
+    public void onAccuracyChanged(Sensor sensor, int accuracy) {
+        // not in use
     }
 }

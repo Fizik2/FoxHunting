@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
@@ -9,21 +9,22 @@
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="horizontal">
+        android:orientation="horizontal"
+        android:id="@+id/menuContainer">
 
         <Button
             android:id="@+id/btnTest"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:onClick="onClickToStart"
-            android:text="@string/toStart"/>
+            android:text="@string/toStart" />
 
         <Button
             android:id="@+id/btnTypeMap"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:onClick="onClickTypeMap"
-            android:text="@string/typeMap"/>
+            android:text="@string/typeMap" />
 
     </LinearLayout>
 
@@ -31,6 +32,15 @@
     <fragment
         android:id="@+id/map"
         android:name="com.google.android.gms.maps.SupportMapFragment"
+        android:layout_below="@+id/menuContainer"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"/>
-</LinearLayout>
+        android:layout_height="match_parent" />
+
+    <ImageView
+        android:id="@+id/imageViewCompass"
+        android:layout_width="150dp"
+        android:layout_height="150dp"
+        android:layout_alignParentBottom="true"
+        android:layout_alignParentRight="true"
+        android:src="@drawable/compass" />
+</RelativeLayout>
