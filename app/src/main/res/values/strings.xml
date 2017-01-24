@@ -26,4 +26,6 @@
     <string name="foxDistanceSettings">foxDistance</string>
 
     <string name="settingsReference">settings</string>
+    <string name="toStart">К началу</string>
+    <string name="typeMap">Тип карты</string>
 </resources>
