@@ -20,6 +20,7 @@ public class SettingsActivity extends AppCompatActivity {
     private AppCompatCheckBox cbAudioSignal;
     private EditText edtFoxNumber;
     private EditText edtFoxDuration;
+    private EditText edtFoxDistance;
 
 
     @Override
@@ -32,6 +33,7 @@ public class SettingsActivity extends AppCompatActivity {
         cbAudioSignal = (AppCompatCheckBox) findViewById(R.id.cbAudioSignal);
         edtFoxNumber = (EditText) findViewById(R.id.edtFoxNumber);
         edtFoxDuration = (EditText) findViewById(R.id.edtFoxDuration);
+        edtFoxDistance = (EditText) findViewById(R.id.edtFoxDistance);
 
     }
 
@@ -55,6 +57,13 @@ public class SettingsActivity extends AppCompatActivity {
             ex.printStackTrace();
         }
 
+        try {
+            Settings.foxDistance = Float.parseFloat(edtFoxDistance.getText().toString()) ;
+        } catch (Exception ex){
+            ex.printStackTrace();
+        }
+
+        Settings.saveSettings(this);
     }
 
     @SuppressLint("SetTextI18n")
@@ -62,10 +71,16 @@ public class SettingsActivity extends AppCompatActivity {
     protected void onResume() {
         super.onResume();
 
+        Settings.loadSettings(this);
+
         cbCompass.setChecked(Settings.isCompass);
         cbPointer.setChecked(Settings.isPointer);
         cbAudioSignal.setChecked(Settings.isAudiosignal);
+
         edtFoxNumber.setText("" + Settings.foxNumber);
         edtFoxDuration.setText("" + Settings.foxDuration);
+        edtFoxDistance.setText("" + Settings.foxDistance);
+
     }
+
 }
