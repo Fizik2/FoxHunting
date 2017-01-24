@@ -5,4 +5,11 @@
     <string name="startPlay">Начать игру</string>
     <string name="settings">Настройки</string>
     <string name="exit">Выход</string>
+    <string name="pointer">Указатель</string>
+    <string name="compass">Компас</string>
+    <string name="audiosignal">Аудиосигнал</string>
+    <string name="foxduration">Продолжительность лисы</string>
+    <string name="numberOfFox">Количество лис</string>
+    <string name="defaultFoxNumber">5</string>
+    <string name="defaultFoxDuration">1</string>
 </resources>

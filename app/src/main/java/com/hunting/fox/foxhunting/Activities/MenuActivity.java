@@ -1,18 +1,20 @@
-package com.hunting.fox.foxhunting;
+package com.hunting.fox.foxhunting.Activities;
 
 import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
-import android.support.v4.app.FragmentActivity;
+import android.support.v7.app.AppCompatActivity;
 import android.view.View;
 
-import com.google.android.gms.maps.SupportMapFragment;
+import com.hunting.fox.foxhunting.Activities.MapsActivity;
+import com.hunting.fox.foxhunting.Activities.SettingsActivity;
+import com.hunting.fox.foxhunting.R;
 
 /**
  * Created by fizik on 23.01.17.
  */
 
-public class MenuActivity extends Activity {
+public class MenuActivity extends AppCompatActivity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {

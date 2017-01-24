@@ -2,8 +2,19 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context="com.hunting.fox.foxhunting.MenuActivity"
+    tools:context="com.hunting.fox.foxhunting.Activities.MenuActivity"
     >
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:gravity="center_horizontal"
+        android:text="@string/settings"
+        android:layout_centerHorizontal="true"
+        android:layout_marginTop="20dp"
+        android:textSize="40sp"
+        android:textColor="#000"/>
+
 
     <LinearLayout
         android:layout_width="wrap_content"
@@ -11,13 +22,63 @@
         android:layout_centerInParent="true"
         android:orientation="vertical">
 
-        <TextView
-            android:layout_width="match_parent"
-            android:layout_height="60dp"
-            android:text="Настройки"
-            android:textAlignment="center"
-            android:gravity="center" />
+        <android.support.v7.widget.AppCompatCheckBox
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:text="@string/pointer"
+            android:id="@+id/cbPointer"
+            />
 
+        <android.support.v7.widget.AppCompatCheckBox
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:text="@string/compass"
+            android:checked="true"
+            android:id="@+id/cbCompass"
+            />
+
+        <android.support.v7.widget.AppCompatCheckBox
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:text="@string/audiosignal"
+            android:checked="true"
+            android:id="@+id/cbAudioSignal"
+            />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:text= "@string/foxduration"
+            android:textColor="#000"/>
+
+
+        <EditText
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:inputType="numberDecimal"
+            android:textColor="#000"
+            android:text="@string/defaultFoxDuration"
+            android:textAlignment="center"
+            android:id="@+id/edtFoxDuration"
+            />
+
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:text= "@string/numberOfFox"
+            android:textColor="#000"/>
+
+
+        <EditText
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:inputType="numberDecimal"
+            android:textColor="#000"
+            android:text="@string/defaultFoxNumber"
+            android:id="@+id/edtFoxNumber"
+            android:textAlignment="center"
+            />
 
 
     </LinearLayout>
