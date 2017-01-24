@@ -4,32 +4,29 @@ import android.Manifest;
 import android.content.DialogInterface;
 import android.content.pm.PackageManager;
 import android.location.Location;
-import android.net.wifi.p2p.WifiP2pManager;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.FragmentActivity;
 import android.os.Bundle;
 import android.support.v7.app.AlertDialog;
 import android.util.Log;
 import android.view.View;
-import android.widget.Toast;
 
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.location.LocationListener;
 import com.google.android.gms.location.LocationRequest;
 import com.google.android.gms.location.LocationServices;
-import com.google.android.gms.maps.CameraUpdate;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
-import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.CameraPosition;
 import com.google.android.gms.maps.model.LatLng;
-import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.hunting.fox.foxhunting.R;
 import com.hunting.fox.foxhunting.Settings;
+
+import java.util.Random;
 
 public class MapsActivity extends FragmentActivity implements
         OnMapReadyCallback, GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener, LocationListener {
@@ -44,12 +41,11 @@ public class MapsActivity extends FragmentActivity implements
     LocationRequest mLocationRequest;
     GoogleApiClient mGoogleApiClient;
 
-    LatLng latLng;
+    LatLng firstLatLng;
 
     Location firstLocation;
 
     private static final CharSequence[] MAP_TYPE_ITEMS = {"Дорожная карта", "Гибрид", "Спутниковая", "Рельеф"};
-
 
 
     @Override
@@ -162,17 +158,31 @@ public class MapsActivity extends FragmentActivity implements
     @Override
     public void onLocationChanged(Location location) {
 
-        if(firstLocation == null) firstLocation = location;
+        if (firstLocation == null) {
+            firstLocation = location;
+            firstLatLng = new LatLng(firstLocation.getLatitude(), firstLocation.getLongitude());
+
+
+            LatLng[] latLngs = generateRandomLocation();
+            float[] results = new float[1];
+
+            for(LatLng latLng : latLngs){
+                Location.distanceBetween(firstLatLng.latitude, firstLatLng.longitude, latLng.latitude, latLng.longitude, results);
+                Log.d(LOG_TAG, "Distance in kilometers: " + results[0]);
+                mMap.addMarker(new MarkerOptions().position(latLng));
+
+            }
+        }
+
         toStart();
         //If you only need one location, unregister the listener
         LocationServices.FusedLocationApi.removeLocationUpdates(mGoogleApiClient, this);
     }
 
-    private void toStart(){
-        latLng = new LatLng(firstLocation.getLatitude(), firstLocation.getLongitude());
+    private void toStart() {
 
         //zoom to current position:
-        CameraPosition cameraPosition = new CameraPosition.Builder().target(latLng).zoom(14).build();
+        CameraPosition cameraPosition = new CameraPosition.Builder().target(firstLatLng).zoom(14).build();
         mMap.animateCamera(CameraUpdateFactory.newCameraPosition(cameraPosition));
     }
 
@@ -217,5 +227,30 @@ public class MapsActivity extends FragmentActivity implements
         AlertDialog fMapTypeDialog = builder.create();
         fMapTypeDialog.setCanceledOnTouchOutside(true);
         fMapTypeDialog.show();
+    }
+
+    private LatLng[] generateRandomLocation() {
+        LatLng[] latLngs = new LatLng[Settings.foxNumber];
+        for (int i = 0; i < Settings.foxNumber; i++) {
+            latLngs[i] = getDestinationPoint(firstLatLng, new Random().nextFloat()*180 - 90, new Random().nextFloat()*Settings.foxDistance);
+        }
+        return latLngs;
+    }
+
+    private LatLng getDestinationPoint(LatLng source, double brng, double dist) {
+        dist = dist / 6371;
+        brng = Math.toRadians(brng);
+
+        double lat1 = Math.toRadians(source.latitude), lon1 = Math.toRadians(source.longitude);
+        double lat2 = Math.asin(Math.sin(lat1) * Math.cos(dist) +
+                Math.cos(lat1) * Math.sin(dist) * Math.cos(brng));
+        double lon2 = lon1 + Math.atan2(Math.sin(brng) * Math.sin(dist) *
+                        Math.cos(lat1),
+                Math.cos(dist) - Math.sin(lat1) *
+                        Math.sin(lat2));
+        if (Double.isNaN(lat2) || Double.isNaN(lon2)) {
+            return null;
+        }
+        return new LatLng(Math.toDegrees(lat2), Math.toDegrees(lon2));
     }
 }
