@@ -122,4 +122,10 @@ public class Game {
         String json = mPrefs.getString(SAVE_NAME, "");
         return gson.fromJson(json, Game.class);
     }
+
+    @SuppressLint("CommitPrefEdits")
+    public void removeIt(Activity activity){
+        SharedPreferences mPrefs = activity.getPreferences(MODE_PRIVATE);
+        mPrefs.edit().remove(SAVE_NAME).commit();
+    }
 }

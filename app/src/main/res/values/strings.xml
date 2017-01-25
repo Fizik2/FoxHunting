@@ -28,4 +28,5 @@
     <string name="settingsReference">settings</string>
     <string name="toStart">К началу</string>
     <string name="typeMap">Тип карты</string>
+    <string name="giveUp">Сдаться</string>
 </resources>

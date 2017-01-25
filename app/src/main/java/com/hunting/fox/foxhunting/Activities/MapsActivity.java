@@ -1,6 +1,7 @@
 package com.hunting.fox.foxhunting.Activities;
 
 import android.Manifest;
+import android.app.Activity;
 import android.content.DialogInterface;
 import android.content.pm.PackageManager;
 import android.hardware.Sensor;
@@ -95,6 +96,31 @@ public class MapsActivity extends FragmentActivity implements
         showMapTypeSelectorDialog();
     }
 
+    public void onClickGiveUp(View view) {
+        if(game == null) return;
+        final Activity activity = this;
+        new AlertDialog.Builder(this)
+                .setIcon(android.R.drawable.ic_delete)
+                .setTitle("Сдаться")
+                .setMessage("Вы действительно хотите сдаться?")
+                .setPositiveButton("Да", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        LatLng[] latLngs = game.getAllFoxes();
+                        for (LatLng latLng : latLngs) {
+                            mMap.addMarker(new MarkerOptions().position(latLng));
+                        }
+                        game.removeIt(activity);
+                        game = null;
+
+                    }
+                })
+                .setNegativeButton("Нет", null)
+                .show();
+
+
+    }
+
     @Override
     public void onMapReady(GoogleMap googleMap) {
         mMap = googleMap;
@@ -139,19 +165,19 @@ public class MapsActivity extends FragmentActivity implements
         if (game == null) {
             game = Game.loadTheLastGame(this);
 
-            if(game == null)
+            if (game == null)
                 game = new Game(location);
 
         }
 
-        List<LatLng> latLngs = game.getCurrentFoxes();
-        float[] results = new float[1];
-        for(LatLng latLng : latLngs){
-            Location.distanceBetween(game.getFirstLatLng().latitude, game.getFirstLatLng().longitude, latLng.latitude, latLng.longitude, results);
-            Log.d(LOG_TAG, "Distance in kilometers: " + results[0]);
-            mMap.addMarker(new MarkerOptions().position(latLng));
-
-        }
+//        List<LatLng> latLngs = game.getCurrentFoxes();
+//        float[] results = new float[1];
+//        for (LatLng latLng : latLngs) {
+//            Location.distanceBetween(game.getFirstLatLng().latitude, game.getFirstLatLng().longitude, latLng.latitude, latLng.longitude, results);
+//            Log.d(LOG_TAG, "Distance in kilometers: " + results[0]);
+//            mMap.addMarker(new MarkerOptions().position(latLng));
+//
+//        }
 
 
         toStart();
@@ -211,13 +237,12 @@ public class MapsActivity extends FragmentActivity implements
     }
 
 
-
     @Override
     protected void onResume() {
         super.onResume();
         game = Game.loadTheLastGame(this);
 
-        if(game != null && game.isCompass || game == null && Settings.isCompass) {
+        if (game != null && game.isCompass || game == null && Settings.isCompass) {
             image.setVisibility(View.VISIBLE);
             mSensorManager.registerListener(this, mSensorManager.getDefaultSensor(Sensor.TYPE_ORIENTATION),
                     SensorManager.SENSOR_DELAY_GAME);
@@ -229,10 +254,10 @@ public class MapsActivity extends FragmentActivity implements
     @Override
     protected void onPause() {
         super.onPause();
-        if(game != null)
+        if (game != null)
             game.saveIt(this);
 
-        if(game != null && game.isCompass || game == null && Settings.isCompass) {
+        if (game != null && game.isCompass || game == null && Settings.isCompass) {
             mSensorManager.unregisterListener(this);
         }
     }

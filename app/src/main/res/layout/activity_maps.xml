@@ -27,6 +27,14 @@
             android:onClick="onClickTypeMap"
             android:text="@string/typeMap" />
 
+
+        <Button
+            android:id="@+id/btnGiveUp"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:onClick="onClickGiveUp"
+            android:text="@string/giveUp" />
+
     </LinearLayout>
 
 
