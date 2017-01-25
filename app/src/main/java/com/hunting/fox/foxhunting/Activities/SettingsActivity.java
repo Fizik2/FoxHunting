@@ -4,6 +4,7 @@ import android.annotation.SuppressLint;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.AppCompatCheckBox;
+import android.view.View;
 import android.widget.EditText;
 
 import com.hunting.fox.foxhunting.R;
@@ -37,6 +38,10 @@ public class SettingsActivity extends AppCompatActivity {
 
     }
 
+    public void onBack(View view) {
+        finish();
+    }
+
     @Override
     protected void onPause() {
         super.onPause();
@@ -46,20 +51,20 @@ public class SettingsActivity extends AppCompatActivity {
         Settings.isAudiosignal = cbAudioSignal.isChecked();
 
         try {
-            Settings.foxNumber = Byte.parseByte(edtFoxNumber.getText().toString()) ;
-        } catch (Exception ex){
+            Settings.foxNumber = Byte.parseByte(edtFoxNumber.getText().toString());
+        } catch (Exception ex) {
             ex.printStackTrace();
         }
 
         try {
-            Settings.foxDuration = Float.parseFloat(edtFoxDuration.getText().toString()) ;
-        } catch (Exception ex){
+            Settings.foxDuration = Float.parseFloat(edtFoxDuration.getText().toString());
+        } catch (Exception ex) {
             ex.printStackTrace();
         }
 
         try {
-            Settings.foxDistance = Float.parseFloat(edtFoxDistance.getText().toString()) ;
-        } catch (Exception ex){
+            Settings.foxDistance = Float.parseFloat(edtFoxDistance.getText().toString());
+        } catch (Exception ex) {
             ex.printStackTrace();
         }
 

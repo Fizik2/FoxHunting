@@ -98,6 +98,7 @@ public class MapsActivity extends FragmentActivity implements
 
     public void onClickGiveUp(View view) {
         if(game == null) return;
+
         final Activity activity = this;
         new AlertDialog.Builder(this)
                 .setIcon(android.R.drawable.ic_delete)
@@ -189,6 +190,7 @@ public class MapsActivity extends FragmentActivity implements
         mp.start();
 
         //zoom to current position:
+        if(game == null) return;
         CameraPosition cameraPosition = new CameraPosition.Builder().target(game.getFirstLatLng()).zoom(14).build();
         mMap.animateCamera(CameraUpdateFactory.newCameraPosition(cameraPosition));
     }

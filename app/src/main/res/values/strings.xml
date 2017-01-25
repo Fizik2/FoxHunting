@@ -3,7 +3,7 @@
     <string name="title_activity_maps">Карта</string>
     <string name="title_activity_menu">Меню</string>
 
-    <string name="startPlay">Начать игру</string>
+    <string name="startPlay">Играть</string>
     <string name="settings">Настройки</string>
     <string name="exit">Выход</string>
 
@@ -29,4 +29,5 @@
     <string name="toStart">К началу</string>
     <string name="typeMap">Тип карты</string>
     <string name="giveUp">Сдаться</string>
+    <string name="goback">goBack</string>
 </resources>

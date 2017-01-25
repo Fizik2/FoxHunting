@@ -39,8 +39,8 @@ public class Game {
     public Game(Location firstLocation) {
         this.firstLocation = firstLocation;
         this.firstLatLng = new LatLng(firstLocation.getLatitude(), firstLocation.getLongitude());
-        this.allFoxes = generateRandomLocation(firstLatLng);
-        this.foundFoxes = new boolean[Settings.foxNumber];
+        this.allFoxes = generateRandomLocation(firstLatLng, foxNumber, foxDistance);
+        this.foundFoxes = new boolean[foxNumber];
         this.currentFoxes = new ArrayList<LatLng>();
 
         for(int i = 0; i < foundFoxes.length; i++){
@@ -52,7 +52,7 @@ public class Game {
 
     private void updateCurrentFox(){
         currentFoxes.clear();
-        for(byte i = 0; i < Settings.foxNumber; i++){
+        for(byte i = 0; i < foxNumber; i++){
             if(!isFoundFox(i))
                 currentFoxes.add(allFoxes[i]);
         }
@@ -69,10 +69,10 @@ public class Game {
         updateCurrentFox();
     }
 
-    private static LatLng[] generateRandomLocation(LatLng firstLatLng) {
-        LatLng[] latLngs = new LatLng[Settings.foxNumber];
-        for (int i = 0; i < Settings.foxNumber; i++) {
-            latLngs[i] = getDestinationPoint(firstLatLng, new Random().nextFloat()*180 - 90, (2*new Random().nextFloat() - 1) *Settings.foxDistance);
+    private static LatLng[] generateRandomLocation(LatLng firstLatLng, byte foxNumber, float foxDistance) {
+        LatLng[] latLngs = new LatLng[foxNumber];
+        for (int i = 0; i < foxNumber; i++) {
+            latLngs[i] = getDestinationPoint(firstLatLng, new Random().nextFloat()*180 - 90, (2*new Random().nextFloat() - 1) *foxDistance);
         }
         return latLngs;
     }
@@ -127,5 +127,17 @@ public class Game {
     public void removeIt(Activity activity){
         SharedPreferences mPrefs = activity.getPreferences(MODE_PRIVATE);
         mPrefs.edit().remove(SAVE_NAME).commit();
+    }
+
+    public boolean areAllFound(){
+        boolean allFound = true;
+        for(boolean isFoxFound : foundFoxes){
+            if(!isFoxFound)
+            {
+                allFound = false;
+                break;
+            }
+        }
+        return allFound;
     }
 }
