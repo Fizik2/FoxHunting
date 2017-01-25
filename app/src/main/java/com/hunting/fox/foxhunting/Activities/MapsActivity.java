@@ -31,9 +31,11 @@ import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.CameraPosition;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.MarkerOptions;
+import com.hunting.fox.foxhunting.Game;
 import com.hunting.fox.foxhunting.R;
 import com.hunting.fox.foxhunting.Settings;
 
+import java.util.List;
 import java.util.Random;
 
 public class MapsActivity extends FragmentActivity implements
@@ -48,16 +50,14 @@ public class MapsActivity extends FragmentActivity implements
     private SupportMapFragment mMapFragment;
     private static final String LOG_TAG = "MapActivity";
 
-    LocationRequest mLocationRequest;
-    GoogleApiClient mGoogleApiClient;
+    private LocationRequest mLocationRequest;
+    private GoogleApiClient mGoogleApiClient;
 
-    LatLng firstLatLng;
-
-    Location firstLocation;
 
     private static final CharSequence[] MAP_TYPE_ITEMS = {"Дорожная карта", "Гибрид", "Спутниковая", "Рельеф"};
 
-    MediaPlayer mp;
+    private MediaPlayer mp;
+    private Game game;
 
 
     @Override
@@ -80,8 +80,10 @@ public class MapsActivity extends FragmentActivity implements
 
     private void init() {
         mMap.getUiSettings().setCompassEnabled(true);
-        mMap.getUiSettings().setMyLocationButtonEnabled(Settings.isPointer);
-        mMap.setMyLocationEnabled(Settings.isPointer);
+
+        boolean needSetPointer = game != null && game.isPointer || game == null && Settings.isPointer;
+        mMap.getUiSettings().setMyLocationButtonEnabled(needSetPointer);
+        mMap.setMyLocationEnabled(needSetPointer);
     }
 
 
@@ -134,21 +136,23 @@ public class MapsActivity extends FragmentActivity implements
     @Override
     public void onLocationChanged(Location location) {
 
-        if (firstLocation == null) {
-            firstLocation = location;
-            firstLatLng = new LatLng(firstLocation.getLatitude(), firstLocation.getLongitude());
+        if (game == null) {
+            game = Game.loadTheLastGame(this);
 
+            if(game == null)
+                game = new Game(location);
 
-            LatLng[] latLngs = generateRandomLocation();
-            float[] results = new float[1];
-
-            for(LatLng latLng : latLngs){
-                Location.distanceBetween(firstLatLng.latitude, firstLatLng.longitude, latLng.latitude, latLng.longitude, results);
-                Log.d(LOG_TAG, "Distance in kilometers: " + results[0]);
-                mMap.addMarker(new MarkerOptions().position(latLng));
-
-            }
         }
+
+        List<LatLng> latLngs = game.getCurrentFoxes();
+        float[] results = new float[1];
+        for(LatLng latLng : latLngs){
+            Location.distanceBetween(game.getFirstLatLng().latitude, game.getFirstLatLng().longitude, latLng.latitude, latLng.longitude, results);
+            Log.d(LOG_TAG, "Distance in kilometers: " + results[0]);
+            mMap.addMarker(new MarkerOptions().position(latLng));
+
+        }
+
 
         toStart();
         //If you only need one location, unregister the listener
@@ -159,7 +163,7 @@ public class MapsActivity extends FragmentActivity implements
         mp.start();
 
         //zoom to current position:
-        CameraPosition cameraPosition = new CameraPosition.Builder().target(firstLatLng).zoom(14).build();
+        CameraPosition cameraPosition = new CameraPosition.Builder().target(game.getFirstLatLng()).zoom(14).build();
         mMap.animateCamera(CameraUpdateFactory.newCameraPosition(cameraPosition));
     }
 
@@ -206,36 +210,14 @@ public class MapsActivity extends FragmentActivity implements
         fMapTypeDialog.show();
     }
 
-    private LatLng[] generateRandomLocation() {
-        LatLng[] latLngs = new LatLng[Settings.foxNumber];
-        for (int i = 0; i < Settings.foxNumber; i++) {
-            latLngs[i] = getDestinationPoint(firstLatLng, new Random().nextFloat()*180 - 90, new Random().nextFloat()*Settings.foxDistance);
-        }
-        return latLngs;
-    }
 
-    private LatLng getDestinationPoint(LatLng source, double brng, double dist) {
-        dist = dist / 6371;
-        brng = Math.toRadians(brng);
-
-        double lat1 = Math.toRadians(source.latitude), lon1 = Math.toRadians(source.longitude);
-        double lat2 = Math.asin(Math.sin(lat1) * Math.cos(dist) +
-                Math.cos(lat1) * Math.sin(dist) * Math.cos(brng));
-        double lon2 = lon1 + Math.atan2(Math.sin(brng) * Math.sin(dist) *
-                        Math.cos(lat1),
-                Math.cos(dist) - Math.sin(lat1) *
-                        Math.sin(lat2));
-        if (Double.isNaN(lat2) || Double.isNaN(lon2)) {
-            return null;
-        }
-        return new LatLng(Math.toDegrees(lat2), Math.toDegrees(lon2));
-    }
 
     @Override
     protected void onResume() {
         super.onResume();
+        game = Game.loadTheLastGame(this);
 
-        if(Settings.isCompass) {
+        if(game != null && game.isCompass || game == null && Settings.isCompass) {
             image.setVisibility(View.VISIBLE);
             mSensorManager.registerListener(this, mSensorManager.getDefaultSensor(Sensor.TYPE_ORIENTATION),
                     SensorManager.SENSOR_DELAY_GAME);
@@ -247,7 +229,10 @@ public class MapsActivity extends FragmentActivity implements
     @Override
     protected void onPause() {
         super.onPause();
-        if(Settings.isCompass) {
+        if(game != null)
+            game.saveIt(this);
+
+        if(game != null && game.isCompass || game == null && Settings.isCompass) {
             mSensorManager.unregisterListener(this);
         }
     }
