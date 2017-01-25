@@ -8,6 +8,7 @@ import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
 import android.location.Location;
+import android.media.MediaPlayer;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.FragmentActivity;
 import android.os.Bundle;
@@ -56,6 +57,8 @@ public class MapsActivity extends FragmentActivity implements
 
     private static final CharSequence[] MAP_TYPE_ITEMS = {"Дорожная карта", "Гибрид", "Спутниковая", "Рельеф"};
 
+    MediaPlayer mp;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -64,6 +67,8 @@ public class MapsActivity extends FragmentActivity implements
         // Obtain the SupportMapFragment and get notified when the map is ready to be used.
         mMapFragment = (SupportMapFragment) getSupportFragmentManager().findFragmentById(R.id.map);
         mMapFragment.getMapAsync(this);
+
+        mp = MediaPlayer.create(this, R.raw.s2);
 
 
         image = (ImageView) findViewById(R.id.imageViewCompass);
@@ -151,6 +156,7 @@ public class MapsActivity extends FragmentActivity implements
     }
 
     private void toStart() {
+        mp.start();
 
         //zoom to current position:
         CameraPosition cameraPosition = new CameraPosition.Builder().target(firstLatLng).zoom(14).build();

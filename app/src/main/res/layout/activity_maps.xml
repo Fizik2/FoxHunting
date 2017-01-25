@@ -3,6 +3,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:orientation="vertical"
     tools:context="com.hunting.fox.foxhunting.Activities.MapsActivity">
 
@@ -42,5 +43,29 @@
         android:layout_height="150dp"
         android:layout_alignParentBottom="true"
         android:layout_alignParentRight="true"
-        android:src="@drawable/compass" />
+        android:src="@drawable/compass"
+        android:contentDescription="@string/compass" />
+
+    <pl.pawelkleczkowski.customgauge.CustomGauge
+        android:id="@+id/gauge1"
+        android:layout_width="150dp"
+        android:layout_height="150dp"
+        android:layout_centerHorizontal="true"
+        android:paddingBottom="10dp"
+        android:paddingLeft="10dp"
+        android:paddingRight="10dp"
+        android:paddingTop="10dp"
+        android:layout_alignParentBottom="true"
+        android:layout_alignParentLeft="true"
+
+        app:gaugePointEndColor="#000"
+        app:gaugePointStartColor="#00ff00"
+
+        app:gaugePointSize="360"
+        app:gaugeStartAngle="90"
+        app:gaugeStrokeCap="ROUND"
+        app:gaugeStrokeWidth="10dp"
+        app:gaugeStartValue="10"
+        app:gaugeEndValue="1000"
+        app:gaugeSweepAngle="360" />
 </RelativeLayout>
