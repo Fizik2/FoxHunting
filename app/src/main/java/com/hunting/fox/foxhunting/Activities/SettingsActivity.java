@@ -57,7 +57,7 @@ public class SettingsActivity extends AppCompatActivity {
         }
 
         try {
-            Settings.foxDuration = Float.parseFloat(edtFoxDuration.getText().toString());
+            Settings.foxDuration = Integer.parseInt(edtFoxDuration.getText().toString());
         } catch (Exception ex) {
             ex.printStackTrace();
         }

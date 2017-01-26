@@ -2,11 +2,15 @@ package com.hunting.fox.foxhunting.Activities;
 
 import android.Manifest;
 import android.app.Activity;
+import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.location.Location;
+import android.location.LocationManager;
 import android.os.Bundle;
 import android.support.v4.app.ActivityCompat;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.View;
@@ -33,6 +37,17 @@ public class MenuActivity extends AppCompatActivity {
         setContentView(R.layout.activity_menu);
     }
 
+    @Override
+    protected void onResume() {
+        super.onResume();
+
+        final LocationManager manager = (LocationManager) getSystemService( Context.LOCATION_SERVICE );
+
+        if ( !manager.isProviderEnabled( LocationManager.GPS_PROVIDER ) ) {
+            buildAlertMessageNoGps();
+        }
+
+    }
 
     public void onPlay(View view) {
         playView = view;
@@ -82,6 +97,22 @@ public class MenuActivity extends AppCompatActivity {
                 return;
             }
         }
+    }
+
+    private void buildAlertMessageNoGps() {
+        final AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setMessage("Для работы приложения необходимо включить GPS!")
+                .setIcon(android.R.drawable.ic_dialog_info)
+                .setTitle("Необходим GPS")
+                .setCancelable(false)
+                .setPositiveButton("Включить", new DialogInterface.OnClickListener() {
+                    public void onClick(@SuppressWarnings("unused") final DialogInterface dialog, @SuppressWarnings("unused") final int id) {
+                        startActivity(new Intent(android.provider.Settings.ACTION_LOCATION_SOURCE_SETTINGS));
+                    }
+                });
+
+        final AlertDialog alert = builder.create();
+        alert.show();
     }
 
 }

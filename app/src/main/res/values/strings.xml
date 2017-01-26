@@ -15,7 +15,7 @@
     <string name="foxDistance">Максимальное расстояние</string>
 
     <string name="defaultFoxNumber">5</string>
-    <string name="defaultFoxDuration">1</string>
+    <string name="defaultFoxDuration">60</string>
     <string name="defaultFoxDistance">5</string>
 
     <string name="pointerSettings">pointer</string>

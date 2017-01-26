@@ -27,25 +27,29 @@ public class Game {
     private List<LatLng> currentFoxes;
     private LatLng[] allFoxes;
     private boolean[] foundFoxes;
+    private final float[] inceptionDistanse;
 
     public boolean isCompass = Settings.isCompass;
     public boolean isPointer = Settings.isPointer;
     public boolean isAudiosignal = Settings.isAudiosignal;
-    public float foxDuration = Settings.foxDuration; // In minutes
-    public float foxDistance = Settings.foxDistance; // In kilometers
+    public int foxDuration = Settings.foxDuration; // In seconds
+    public float maxFoxDistance = Settings.foxDistance; // In kilometers
     public byte foxNumber = Settings.foxNumber;
 
 
     public Game(Location firstLocation) {
         this.firstLocation = firstLocation;
         this.firstLatLng = new LatLng(firstLocation.getLatitude(), firstLocation.getLongitude());
-        this.allFoxes = generateRandomLocation(firstLatLng, foxNumber, foxDistance);
+        this.allFoxes = generateRandomLocation(firstLatLng, foxNumber, maxFoxDistance);
         this.foundFoxes = new boolean[foxNumber];
         this.currentFoxes = new ArrayList<LatLng>();
+        this.inceptionDistanse = new float[foxNumber];
 
-        for(int i = 0; i < foundFoxes.length; i++){
+        for(int i = 0; i < foxNumber; i++){
             foundFoxes[i] = false;
+            inceptionDistanse[i] = getFoxDistance(allFoxes[i], firstLatLng);
         }
+
 
         updateCurrentFox();
     }
@@ -139,5 +143,20 @@ public class Game {
             }
         }
         return allFound;
+    }
+
+    private float getFoxDistance(LatLng foxLatLng, LatLng myLatLng){
+        float[] results = new float[1];
+        Location.distanceBetween(foxLatLng.latitude, foxLatLng.longitude, myLatLng.latitude, myLatLng.longitude, results);
+        return results[0];
+    }
+
+    public float getFoxIntensePercent(LatLng foxLatLng, LatLng myLatLng){
+        //TODO: Do we need distance for each fox?
+        float foxDistance = getFoxDistance(foxLatLng, myLatLng);
+        if(foxDistance > maxFoxDistance*1000)
+            return  -(foxDistance - maxFoxDistance*1000)/(maxFoxDistance*1000);
+        else
+            return foxDistance/(1000*maxFoxDistance);
     }
 }

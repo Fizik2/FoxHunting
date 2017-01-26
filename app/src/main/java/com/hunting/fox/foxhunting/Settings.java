@@ -11,7 +11,7 @@ public class Settings {
     public static boolean isCompass = true;
     public static boolean isPointer = false;
     public static boolean isAudiosignal = true;
-    public static float foxDuration = 1.0f; // In minutes
+    public static int foxDuration = 1; // In seconds
     public static float foxDistance = 5.0f; // In kilometers
     public static byte foxNumber = 5;
 
@@ -23,7 +23,7 @@ public class Settings {
         isAudiosignal = settings.getBoolean(activity.getString(R.string.audioSignalSettings), isAudiosignal);
         isPointer = settings.getBoolean(activity.getString(R.string.pointerSettings), isPointer);
 
-        foxDuration = settings.getFloat(activity.getString(R.string.foxDurationSettings), foxDuration);
+        foxDuration = settings.getInt(activity.getString(R.string.foxDurationSettings), foxDuration);
         foxDistance = settings.getFloat(activity.getString(R.string.foxDistanceSettings), foxDistance);
         foxNumber = (byte) settings.getInt(activity.getString(R.string.foxNumberSettings), foxNumber);
 
@@ -37,7 +37,7 @@ public class Settings {
         editor.putBoolean(activity.getString(R.string.audioSignalSettings), isAudiosignal);
         editor.putBoolean(activity.getString(R.string.pointerSettings), isPointer);
 
-        editor.putFloat(activity.getString(R.string.foxDurationSettings), foxDuration);
+        editor.putInt(activity.getString(R.string.foxDurationSettings), foxDuration);
         editor.putFloat(activity.getString(R.string.foxDistanceSettings), foxDistance);
         editor.putInt(activity.getString(R.string.foxNumberSettings), foxNumber);
 

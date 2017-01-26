@@ -3,7 +3,6 @@ package com.hunting.fox.foxhunting.Activities;
 import android.Manifest;
 import android.app.Activity;
 import android.content.DialogInterface;
-import android.content.pm.PackageManager;
 import android.hardware.Sensor;
 import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
@@ -19,6 +18,7 @@ import android.view.View;
 import android.view.animation.Animation;
 import android.view.animation.RotateAnimation;
 import android.widget.ImageView;
+import android.widget.TextView;
 
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
@@ -37,11 +37,14 @@ import com.hunting.fox.foxhunting.R;
 import com.hunting.fox.foxhunting.Settings;
 
 import java.util.List;
-import java.util.Random;
+
+import pl.pawelkleczkowski.customgauge.CustomGauge;
 
 public class MapsActivity extends FragmentActivity implements
         OnMapReadyCallback, GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener, LocationListener, SensorEventListener {
 
+    private final float MIN_HZ = 0.1f;
+    private final float MAX_HZ = 3.0f;
 
     private ImageView image;
     private float currentDegree = 0f;
@@ -50,6 +53,11 @@ public class MapsActivity extends FragmentActivity implements
     private GoogleMap mMap;
     private SupportMapFragment mMapFragment;
     private static final String LOG_TAG = "MapActivity";
+
+    private boolean continueCheckFox = false;
+    private boolean isCreateLocation = false;
+    //private boolean continueListenFox = false;
+
 
     private LocationRequest mLocationRequest;
     private GoogleApiClient mGoogleApiClient;
@@ -60,12 +68,17 @@ public class MapsActivity extends FragmentActivity implements
     private MediaPlayer mp;
     private Game game;
 
+    private LatLng currentLatLng;
+
+    private TextView currentMsg;
+    CustomGauge gauge;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_maps);
         // Obtain the SupportMapFragment and get notified when the map is ready to be used.
+
         mMapFragment = (SupportMapFragment) getSupportFragmentManager().findFragmentById(R.id.map);
         mMapFragment.getMapAsync(this);
 
@@ -73,7 +86,8 @@ public class MapsActivity extends FragmentActivity implements
 
 
         image = (ImageView) findViewById(R.id.imageViewCompass);
-
+        currentMsg = (TextView) findViewById(R.id.currentMsg);
+        gauge = (CustomGauge) findViewById(R.id.gauge1);
 
         // initialize your android device sensor capabilities
         mSensorManager = (SensorManager) getSystemService(SENSOR_SERVICE);
@@ -84,7 +98,10 @@ public class MapsActivity extends FragmentActivity implements
 
         boolean needSetPointer = game != null && game.isPointer || game == null && Settings.isPointer;
         mMap.getUiSettings().setMyLocationButtonEnabled(needSetPointer);
+
+        ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION);
         mMap.setMyLocationEnabled(needSetPointer);
+
     }
 
 
@@ -97,7 +114,7 @@ public class MapsActivity extends FragmentActivity implements
     }
 
     public void onClickGiveUp(View view) {
-        if(game == null) return;
+        if (game == null) return;
 
         final Activity activity = this;
         new AlertDialog.Builder(this)
@@ -111,6 +128,8 @@ public class MapsActivity extends FragmentActivity implements
                         for (LatLng latLng : latLngs) {
                             mMap.addMarker(new MarkerOptions().position(latLng));
                         }
+
+                        continueCheckFox = false;
                         game.removeIt(activity);
                         game = null;
 
@@ -132,7 +151,6 @@ public class MapsActivity extends FragmentActivity implements
         mGoogleApiClient.connect();
     }
 
-
     protected synchronized void buildGoogleApiClient() {
         mGoogleApiClient = new GoogleApiClient.Builder(this)
                 .addConnectionCallbacks(this)
@@ -149,6 +167,7 @@ public class MapsActivity extends FragmentActivity implements
         mLocationRequest.setPriority(LocationRequest.PRIORITY_BALANCED_POWER_ACCURACY);
         //mLocationRequest.setSmallestDisplacement(0.1F); //1/10 meter
 
+        ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION);
         LocationServices.FusedLocationApi.requestLocationUpdates(mGoogleApiClient, mLocationRequest, this);
     }
 
@@ -171,6 +190,8 @@ public class MapsActivity extends FragmentActivity implements
 
         }
 
+        currentLatLng = new LatLng(location.getLatitude(), location.getLongitude());
+
 //        List<LatLng> latLngs = game.getCurrentFoxes();
 //        float[] results = new float[1];
 //        for (LatLng latLng : latLngs) {
@@ -180,6 +201,9 @@ public class MapsActivity extends FragmentActivity implements
 //
 //        }
 
+        isCreateLocation = true;
+        continueCheckFox = true;
+        listenFoxes();
 
         toStart();
         //If you only need one location, unregister the listener
@@ -187,10 +211,10 @@ public class MapsActivity extends FragmentActivity implements
     }
 
     private void toStart() {
-        mp.start();
+
 
         //zoom to current position:
-        if(game == null) return;
+        if (game == null) return;
         CameraPosition cameraPosition = new CameraPosition.Builder().target(game.getFirstLatLng()).zoom(14).build();
         mMap.animateCamera(CameraUpdateFactory.newCameraPosition(cameraPosition));
     }
@@ -238,11 +262,16 @@ public class MapsActivity extends FragmentActivity implements
         fMapTypeDialog.show();
     }
 
-
     @Override
     protected void onResume() {
         super.onResume();
+
+
         game = Game.loadTheLastGame(this);
+
+        continueCheckFox = true;
+        if (game != null && isCreateLocation)
+            listenFoxes();
 
         if (game != null && game.isCompass || game == null && Settings.isCompass) {
             image.setVisibility(View.VISIBLE);
@@ -256,6 +285,7 @@ public class MapsActivity extends FragmentActivity implements
     @Override
     protected void onPause() {
         super.onPause();
+        continueCheckFox = false;
         if (game != null)
             game.saveIt(this);
 
@@ -283,4 +313,103 @@ public class MapsActivity extends FragmentActivity implements
     public void onAccuracyChanged(Sensor sensor, int accuracy) {
         // not in use
     }
+
+    private void listenFoxes() {
+        //if(continueListenFox) return;
+        //continueListenFox = true;
+        new Thread() {
+            @Override
+            public void run() {
+                super.run();
+
+                while (continueCheckFox && game != null && !game.areAllFound()) {
+                    List<LatLng> latLngs = game.getCurrentFoxes();
+                    int foxCount = 0;
+                    for (LatLng latLng : latLngs) {
+                        if (!continueCheckFox) break;
+                        foxCount++;
+                        int ticks = 0;
+                        showAFox(latLng, foxCount);
+                        float intense;
+                        float hz;
+                        if (game != null)
+                            intense = game.getFoxIntensePercent(latLng, currentLatLng);
+                        else
+                            intense = 0;
+
+
+                        if (intense < 0) {
+                            hz = MIN_HZ;
+                            if(intense < -100)
+                                intense = -100;
+                        } else {
+                            hz = MIN_HZ + (MAX_HZ - MIN_HZ) * intense; // 0.5 - 10
+                        }
+                        indicateFox(intense);
+
+                        Log.e(LOG_TAG, "Current intense " + intense);
+                        Log.e(LOG_TAG, "Current hz " + hz);
+                        while (continueCheckFox && game != null && ticks < game.foxDuration * hz) {
+                            ticks++;
+                            foxSound();
+                            try {
+                                long mls = (long) (1000 * 1.0 / hz);
+                                Thread.sleep(mls);
+                            } catch (InterruptedException e) {
+                                e.printStackTrace();
+                            }
+                        }
+                    }
+
+                    int seconds = 0;
+                    showAFox(null, 0);
+                    while (continueCheckFox && game != null && seconds < game.foxDuration) {
+                        seconds++;
+                        try {
+                            Thread.sleep(1000);
+                        } catch (InterruptedException e) {
+                            e.printStackTrace();
+                        }
+                    }
+
+                }
+                //continueListenFox = false;
+            }
+        }.start();
+    }
+
+    private void showAFox(LatLng latLng, final int i) {
+        Runnable r1 = new Runnable() {
+            @Override
+            public void run() {
+                if (i != 0)
+                    currentMsg.setText("Лиса №" + i);
+                else
+                    currentMsg.setText("");
+            }
+        };
+        runOnUiThread(r1);
+    }
+
+    private void foxSound() {
+        mp.start();
+    }
+
+
+    private void indicateFox(final float intense) {
+        Runnable r1 = new Runnable() {
+            @Override
+            public void run() {
+                if (intense < 0) {
+                    gauge.setPointStartColor(getResources().getColor(R.color.blue));
+                    gauge.setValue(-(int)(intense*100));
+                } else {
+                    gauge.setPointStartColor(getResources().getColor(R.color.red));
+                    gauge.setValue((int)(intense*100));
+                }
+            }
+        };
+        runOnUiThread(r1);
+    }
+
 }
