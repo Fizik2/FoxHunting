@@ -9,6 +9,7 @@ import com.google.android.gms.maps.model.LatLng;
 import com.google.gson.Gson;
 
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.List;
 import java.util.Random;
 
@@ -37,7 +38,7 @@ public class Game {
     private float maxFoxDistance = Settings.foxDistance; // In kilometers
     public float eraseDistance = Settings.eraseDistance; // In meters
     private byte foxNumber = Settings.foxNumber;
-
+    public long startTime = Calendar.getInstance().getTimeInMillis();
 
     public Game(Location firstLocation) {
         this.firstLocation = firstLocation;
@@ -46,6 +47,7 @@ public class Game {
         this.foundFoxes = new boolean[foxNumber];
         //this.currentFoxes = new ArrayList<LatLng>();
         //this.inceptionDistanse = new float[foxNumber];
+
 
         for(int i = 0; i < foxNumber; i++){
             foundFoxes[i] = false;

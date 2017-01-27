@@ -10,9 +10,9 @@
     <string name="pointer">Указатель</string>
     <string name="compass">Компас</string>
     <string name="audiosignal">Аудиосигнал</string>
-    <string name="foxduration">Продолжительность лисы</string>
+    <string name="foxduration">Продолжительность лисы\n(секунды)</string>
     <string name="foxNumber">Количество лис</string>
-    <string name="foxDistance">Максимальное расстояние</string>
+    <string name="foxDistance">Максимальное расстояние\n(километоры)</string>
 
     <string name="defaultFoxNumber">5</string>
     <string name="defaultFoxDuration">60</string>

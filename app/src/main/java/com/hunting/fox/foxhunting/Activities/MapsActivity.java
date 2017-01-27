@@ -37,6 +37,7 @@ import com.hunting.fox.foxhunting.Game;
 import com.hunting.fox.foxhunting.R;
 import com.hunting.fox.foxhunting.Settings;
 
+import java.util.Calendar;
 import java.util.List;
 
 import pl.pawelkleczkowski.customgauge.CustomGauge;
@@ -97,12 +98,21 @@ public class MapsActivity extends FragmentActivity implements
     private void init() {
         mMap.getUiSettings().setCompassEnabled(true);
 
-        boolean needSetPointer = game != null && game.isPointer || game == null && Settings.isPointer;
+        //boolean needSetPointer = game != null && game.isPointer || game == null && Settings.isPointer;
+        boolean needSetPointer = Settings.isPointer;
         mMap.getUiSettings().setMyLocationButtonEnabled(needSetPointer);
 
         ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION);
         mMap.setMyLocationEnabled(needSetPointer);
 
+        if (game != null) {
+            LatLng[] latLngs = game.getAllFoxes();
+            for (byte i = 0; i < latLngs.length; i++) {
+                if (game.isFoundFox(i))
+                    mMap.addMarker(new MarkerOptions().position(latLngs[i]));
+            }
+
+        }
     }
 
 
@@ -114,17 +124,53 @@ public class MapsActivity extends FragmentActivity implements
         showMapTypeSelectorDialog();
     }
 
+    private void msgAfterGiveUp() {
+        long endTime = Calendar.getInstance().getTimeInMillis();
+        long diff = endTime - game.startTime;
+        int durationGameHours = (int) (diff / 1000 / 60 / 60);
+        int durationGameMinutes = (int) (diff / 1000 / 60) - durationGameHours * 60;
+
+
+        int foundFoxCount = 0;
+        for(byte i = 0; i < game.getAllFoxes().length; i++){
+            foundFoxCount += game.isFoundFox(i) ? 1 : 0;
+        }
+
+        String msg = "";
+        if(foundFoxCount == 0)
+            msg += "Вы не нашли ни одной лисы за ";
+        else
+            msg += "Вы нашли " + foundFoxCount + " лис(ы) за ";
+
+
+        if (durationGameHours != 0)
+            msg += durationGameHours + ":" + durationGameMinutes;
+        else
+            msg += durationGameMinutes + " минут(ы)";
+
+        new AlertDialog.Builder(this)
+                .setIcon(R.drawable.attention512)
+                .setTitle("Игра закончена!")
+                .setMessage(msg)
+                .setPositiveButton("Ок", null)
+                .show();
+
+
+    }
+
     public void onClickGiveUp(View view) {
         if (game == null) return;
 
         final Activity activity = this;
         new AlertDialog.Builder(this)
-                .setIcon(android.R.drawable.ic_delete)
+                .setIcon(R.drawable.attention512)
                 .setTitle("Сдаться")
                 .setMessage("Вы действительно хотите сдаться?")
                 .setPositiveButton("Да", new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
+                        msgAfterGiveUp();
+
                         LatLng[] latLngs = game.getAllFoxes();
                         for (LatLng latLng : latLngs) {
                             mMap.addMarker(new MarkerOptions().position(latLng));
@@ -141,6 +187,32 @@ public class MapsActivity extends FragmentActivity implements
 
 
     }
+
+    private void finishGame() {
+        long endTime = Calendar.getInstance().getTimeInMillis();
+        long diff = endTime - game.startTime;
+        int durationGameHours = (int) (diff / 1000 / 60 / 60);
+        int durationGameMinutes = (int) (diff / 1000 / 60) - durationGameHours * 60;
+
+        game.removeIt(this);
+        game = null;
+        continueCheckFox = false;
+
+
+        String msg = "Поздравляем, Вы нашли всех лис за ";
+        if (durationGameHours != 0)
+            msg += durationGameHours + ":" + durationGameMinutes;
+        else
+            msg += durationGameMinutes + " минут(ы)";
+
+        new AlertDialog.Builder(this)
+                .setIcon(R.drawable.attention512)
+                .setTitle("Игра закончена!")
+                .setMessage(msg)
+                .setPositiveButton("Ок", null)
+                .show();
+    }
+
 
     @Override
     public void onMapReady(GoogleMap googleMap) {
@@ -205,7 +277,7 @@ public class MapsActivity extends FragmentActivity implements
             LocationServices.FusedLocationApi.removeLocationUpdates(mGoogleApiClient, this);
             finishGame();
         } else {
-            if (game != null) {
+            if (game != null && !game.areAllFound()) {
                 LatLng[] latLngs = game.getAllFoxes();
                 for (byte i = 0; i < latLngs.length; i++) {
                     if (game.isFoundFox(i)) continue;
@@ -221,8 +293,9 @@ public class MapsActivity extends FragmentActivity implements
 
                         mMap.addMarker(new MarkerOptions().position(latLngs[i]));
                         if (game.areAllFound()) break;
+
                         new AlertDialog.Builder(this)
-                                .setIcon(android.R.drawable.ic_delete)
+                                .setIcon(R.drawable.attention512)
                                 .setTitle("Есть!")
                                 .setMessage("Ура! Лиса найдена!")
                                 .setPositiveButton("Ок", null)
@@ -233,21 +306,6 @@ public class MapsActivity extends FragmentActivity implements
         }
     }
 
-    private void finishGame() {
-        game.removeIt(this);
-        game = null;
-        continueCheckFox = false;
-
-
-        //TODO: add Time
-        //TODO: после выхода не сохраняются поставленные маркеры на карте
-        new AlertDialog.Builder(this)
-                .setIcon(android.R.drawable.ic_delete)
-                .setTitle("Игра закончена!")
-                .setMessage("Поздравляем, Вы нашли всех лис за ...")
-                .setPositiveButton("Ок", null)
-                .show();
-    }
 
     private void toStart() {
 
@@ -308,15 +366,18 @@ public class MapsActivity extends FragmentActivity implements
         if (game != null && !game.areAllFound()) {
             ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION);
             LocationServices.FusedLocationApi.requestLocationUpdates(mGoogleApiClient, mLocationRequest, this);
+
+
         }
 
         game = Game.loadTheLastGame(this);
 
         continueCheckFox = true;
-        if (game != null && isCreateLocation)
+        if (game != null && isCreateLocation) {
             listenFoxes();
-
-        if (game != null && game.isCompass || game == null && Settings.isCompass) {
+        }
+        //if (game != null && game.isCompass || game == null && Settings.isCompass) {
+        if (Settings.isCompass) {
             image.setVisibility(View.VISIBLE);
             mSensorManager.registerListener(this, mSensorManager.getDefaultSensor(Sensor.TYPE_ORIENTATION),
                     SensorManager.SENSOR_DELAY_GAME);
@@ -331,11 +392,15 @@ public class MapsActivity extends FragmentActivity implements
 
         LocationServices.FusedLocationApi.removeLocationUpdates(mGoogleApiClient, this);
 
+        if (mMap != null) {
+            mMap.clear();
+        }
         continueCheckFox = false;
         if (game != null)
             game.saveIt(this);
 
-        if (game != null && game.isCompass || game == null && Settings.isCompass) {
+        //if (game != null && game.isCompass || game == null && Settings.isCompass) {
+        if (Settings.isCompass) {
             mSensorManager.unregisterListener(this);
         }
     }
@@ -390,15 +455,17 @@ public class MapsActivity extends FragmentActivity implements
                             hz = MIN_HZ + (MAX_HZ - MIN_HZ) * intense; // 0.5 - 10
                         }
 
-                        indicateFox(intense);
 
                         Log.e(LOG_TAG, "Current intense " + intense);
                         Log.e(LOG_TAG, "Current hz " + hz);
+                        long mls = (long) (1000 * 1.0 / hz);
                         while (continueCheckFox && game != null && ticks < game.foxDuration * hz) {
+                            if(ticks % hz == 0)
+                                indicateFox(intense);
+
                             ticks++;
                             foxSound();
                             try {
-                                long mls = (long) (1000 * 1.0 / hz);
                                 Thread.sleep(mls);
                             } catch (InterruptedException e) {
                                 e.printStackTrace();
@@ -438,10 +505,9 @@ public class MapsActivity extends FragmentActivity implements
     }
 
     private void foxSound() {
-        if (game.isAudiosignal)
+        if (Settings.isAudiosignal)
             mp.start();
     }
-
 
     private void indicateFox(final float intense) {
         Runnable r1 = new Runnable() {

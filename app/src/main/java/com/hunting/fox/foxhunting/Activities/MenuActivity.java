@@ -19,6 +19,7 @@ import com.hunting.fox.foxhunting.Activities.MapsActivity;
 import com.hunting.fox.foxhunting.Activities.SettingsActivity;
 import com.hunting.fox.foxhunting.Game;
 import com.hunting.fox.foxhunting.R;
+import com.hunting.fox.foxhunting.Settings;
 
 /**
  * Created by fizik on 23.01.17.
@@ -35,6 +36,8 @@ public class MenuActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_menu);
+
+        Settings.loadSettings(this);
     }
 
     @Override
