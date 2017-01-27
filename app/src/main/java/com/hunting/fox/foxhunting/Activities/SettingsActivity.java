@@ -22,6 +22,7 @@ public class SettingsActivity extends AppCompatActivity {
     private EditText edtFoxNumber;
     private EditText edtFoxDuration;
     private EditText edtFoxDistance;
+    private EditText edtEraseDistance;
 
 
     @Override
@@ -35,6 +36,7 @@ public class SettingsActivity extends AppCompatActivity {
         edtFoxNumber = (EditText) findViewById(R.id.edtFoxNumber);
         edtFoxDuration = (EditText) findViewById(R.id.edtFoxDuration);
         edtFoxDistance = (EditText) findViewById(R.id.edtFoxDistance);
+        edtEraseDistance = (EditText) findViewById(R.id.edtEraseDistance);
 
     }
 
@@ -68,6 +70,12 @@ public class SettingsActivity extends AppCompatActivity {
             ex.printStackTrace();
         }
 
+        try {
+            Settings.eraseDistance = Float.parseFloat(edtEraseDistance.getText().toString());
+        } catch (Exception ex) {
+            ex.printStackTrace();
+        }
+
         Settings.saveSettings(this);
     }
 
@@ -85,6 +93,7 @@ public class SettingsActivity extends AppCompatActivity {
         edtFoxNumber.setText("" + Settings.foxNumber);
         edtFoxDuration.setText("" + Settings.foxDuration);
         edtFoxDistance.setText("" + Settings.foxDistance);
+        edtEraseDistance.setText("" + Settings.eraseDistance);
 
     }
 

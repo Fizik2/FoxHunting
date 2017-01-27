@@ -13,6 +13,7 @@ public class Settings {
     public static boolean isAudiosignal = true;
     public static int foxDuration = 1; // In seconds
     public static float foxDistance = 5.0f; // In kilometers
+    public static float eraseDistance = 100f; // In meters
     public static byte foxNumber = 5;
 
 
@@ -25,6 +26,7 @@ public class Settings {
 
         foxDuration = settings.getInt(activity.getString(R.string.foxDurationSettings), foxDuration);
         foxDistance = settings.getFloat(activity.getString(R.string.foxDistanceSettings), foxDistance);
+        eraseDistance = settings.getFloat(activity.getString(R.string.eraseDistanceSettings), eraseDistance);
         foxNumber = (byte) settings.getInt(activity.getString(R.string.foxNumberSettings), foxNumber);
 
     }
@@ -39,6 +41,8 @@ public class Settings {
 
         editor.putInt(activity.getString(R.string.foxDurationSettings), foxDuration);
         editor.putFloat(activity.getString(R.string.foxDistanceSettings), foxDistance);
+        editor.putFloat(activity.getString(R.string.eraseDistanceSettings), eraseDistance);
+
         editor.putInt(activity.getString(R.string.foxNumberSettings), foxNumber);
 
         editor.commit();

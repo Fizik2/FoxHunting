@@ -66,7 +66,10 @@
             android:layout_width="wrap_content"
             android:layout_height="match_parent"
             android:text= "@string/foxduration"
-            android:textColor="#000"/>
+            android:textColor="#000"
+            android:gravity="center"
+
+            />
 
 
         <EditText
@@ -81,9 +84,11 @@
 
 
         <TextView
-            android:layout_width="wrap_content"
+            android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:text= "@string/foxNumber"
+            android:gravity="center"
+            android:textAlignment="center"
             android:textColor="#000"/>
 
 
@@ -102,7 +107,9 @@
             android:layout_width="wrap_content"
             android:layout_height="match_parent"
             android:text= "@string/foxDistance"
-            android:textColor="#000"/>
+            android:textColor="#000"
+            android:gravity="center"
+            />
 
 
         <EditText
@@ -115,6 +122,24 @@
             android:textAlignment="center"
             />
 
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:gravity="center"
+            android:text="@string/eraseDistance"
+            android:textColor="#000"/>
+
+
+        <EditText
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:inputType="numberDecimal"
+            android:textColor="#000"
+            android:text="@string/defaultEraseDistance"
+            android:id="@+id/edtEraseDistance"
+            android:textAlignment="center"
+            />
 
     </LinearLayout>
 

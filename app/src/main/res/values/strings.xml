@@ -24,10 +24,14 @@
     <string name="foxDurationSettings">foxDuration</string>
     <string name="foxNumberSettings">foxNumber</string>
     <string name="foxDistanceSettings">foxDistance</string>
+    <string name="eraseDistanceSettings">eraseDistance</string>
+
 
     <string name="settingsReference">settings</string>
     <string name="toStart">К началу</string>
     <string name="typeMap">Тип карты</string>
     <string name="giveUp">Сдаться</string>
     <string name="goback">goBack</string>
+    <string name="defaultEraseDistance">100</string>
+    <string name="eraseDistance">Расстояние касание лисы\n(метры)</string>
 </resources>

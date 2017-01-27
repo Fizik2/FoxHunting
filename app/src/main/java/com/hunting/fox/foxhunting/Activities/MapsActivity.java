@@ -3,6 +3,7 @@ package com.hunting.fox.foxhunting.Activities;
 import android.Manifest;
 import android.app.Activity;
 import android.content.DialogInterface;
+import android.content.pm.PackageManager;
 import android.hardware.Sensor;
 import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
@@ -187,27 +188,65 @@ public class MapsActivity extends FragmentActivity implements
 
             if (game == null)
                 game = new Game(location);
-
         }
 
         currentLatLng = new LatLng(location.getLatitude(), location.getLongitude());
 
-//        List<LatLng> latLngs = game.getCurrentFoxes();
-//        float[] results = new float[1];
-//        for (LatLng latLng : latLngs) {
-//            Location.distanceBetween(game.getFirstLatLng().latitude, game.getFirstLatLng().longitude, latLng.latitude, latLng.longitude, results);
-//            Log.d(LOG_TAG, "Distance in kilometers: " + results[0]);
-//            mMap.addMarker(new MarkerOptions().position(latLng));
-//
-//        }
+        if (!isCreateLocation) {
+            isCreateLocation = true;
+            continueCheckFox = true;
+            listenFoxes();
+            toStart();
 
-        isCreateLocation = true;
-        continueCheckFox = true;
-        listenFoxes();
+        }
 
-        toStart();
         //If you only need one location, unregister the listener
-        LocationServices.FusedLocationApi.removeLocationUpdates(mGoogleApiClient, this);
+        if (game != null && game.areAllFound()) {
+            LocationServices.FusedLocationApi.removeLocationUpdates(mGoogleApiClient, this);
+            finishGame();
+        } else {
+            if (game != null) {
+                LatLng[] latLngs = game.getAllFoxes();
+                for (byte i = 0; i < latLngs.length; i++) {
+                    if (game.isFoundFox(i)) continue;
+                    Log.e(LOG_TAG, "Distansce to " + i + " fox =" + game.getFoxDistance(latLngs[i], currentLatLng));
+                    if (game.getFoxDistance(latLngs[i], currentLatLng) <= game.eraseDistance) {
+
+
+                        try {
+                            game.foxFound(i);
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                        }
+
+                        mMap.addMarker(new MarkerOptions().position(latLngs[i]));
+                        if (game.areAllFound()) break;
+                        new AlertDialog.Builder(this)
+                                .setIcon(android.R.drawable.ic_delete)
+                                .setTitle("Есть!")
+                                .setMessage("Ура! Лиса найдена!")
+                                .setPositiveButton("Ок", null)
+                                .show();
+                    }
+                }
+            }
+        }
+    }
+
+    private void finishGame() {
+        game.removeIt(this);
+        game = null;
+        continueCheckFox = false;
+
+
+        //TODO: add Time
+        //TODO: после выхода не сохраняются поставленные маркеры на карте
+        new AlertDialog.Builder(this)
+                .setIcon(android.R.drawable.ic_delete)
+                .setTitle("Игра закончена!")
+                .setMessage("Поздравляем, Вы нашли всех лис за ...")
+                .setPositiveButton("Ок", null)
+                .show();
     }
 
     private void toStart() {
@@ -266,6 +305,10 @@ public class MapsActivity extends FragmentActivity implements
     protected void onResume() {
         super.onResume();
 
+        if (game != null && !game.areAllFound()) {
+            ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION);
+            LocationServices.FusedLocationApi.requestLocationUpdates(mGoogleApiClient, mLocationRequest, this);
+        }
 
         game = Game.loadTheLastGame(this);
 
@@ -285,6 +328,9 @@ public class MapsActivity extends FragmentActivity implements
     @Override
     protected void onPause() {
         super.onPause();
+
+        LocationServices.FusedLocationApi.removeLocationUpdates(mGoogleApiClient, this);
+
         continueCheckFox = false;
         if (game != null)
             game.saveIt(this);
@@ -315,36 +361,35 @@ public class MapsActivity extends FragmentActivity implements
     }
 
     private void listenFoxes() {
-        //if(continueListenFox) return;
-        //continueListenFox = true;
         new Thread() {
             @Override
             public void run() {
                 super.run();
 
                 while (continueCheckFox && game != null && !game.areAllFound()) {
-                    List<LatLng> latLngs = game.getCurrentFoxes();
-                    int foxCount = 0;
-                    for (LatLng latLng : latLngs) {
+                    //List<LatLng> latLngs = game.getCurrentFoxes();
+                    LatLng[] latLngs = game.getAllFoxes();
+                    for (byte i = 0; i < latLngs.length; i++) {
                         if (!continueCheckFox) break;
-                        foxCount++;
+                        if (game.isFoundFox(i)) continue;
                         int ticks = 0;
-                        showAFox(latLng, foxCount);
+                        showAFox(latLngs[i], i + 1);
                         float intense;
                         float hz;
                         if (game != null)
-                            intense = game.getFoxIntensePercent(latLng, currentLatLng);
+                            intense = game.getFoxIntensePercent(latLngs[i], currentLatLng);
                         else
                             intense = 0;
 
 
                         if (intense < 0) {
                             hz = MIN_HZ;
-                            if(intense < -100)
-                                intense = -100;
+                            if (intense < -1)
+                                intense = -1;
                         } else {
                             hz = MIN_HZ + (MAX_HZ - MIN_HZ) * intense; // 0.5 - 10
                         }
+
                         indicateFox(intense);
 
                         Log.e(LOG_TAG, "Current intense " + intense);
@@ -363,6 +408,7 @@ public class MapsActivity extends FragmentActivity implements
 
                     int seconds = 0;
                     showAFox(null, 0);
+                    indicateFox(0);
                     while (continueCheckFox && game != null && seconds < game.foxDuration) {
                         seconds++;
                         try {
@@ -392,7 +438,8 @@ public class MapsActivity extends FragmentActivity implements
     }
 
     private void foxSound() {
-        mp.start();
+        if (game.isAudiosignal)
+            mp.start();
     }
 
 
@@ -402,10 +449,10 @@ public class MapsActivity extends FragmentActivity implements
             public void run() {
                 if (intense < 0) {
                     gauge.setPointStartColor(getResources().getColor(R.color.blue));
-                    gauge.setValue(-(int)(intense*100));
+                    gauge.setValue(-(int) (intense * 100));
                 } else {
                     gauge.setPointStartColor(getResources().getColor(R.color.red));
-                    gauge.setValue((int)(intense*100));
+                    gauge.setValue((int) (intense * 100));
                 }
             }
         };

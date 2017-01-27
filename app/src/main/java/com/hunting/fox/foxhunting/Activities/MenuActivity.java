@@ -75,7 +75,6 @@ public class MenuActivity extends AppCompatActivity {
         this.finish();
     }
 
-    //TODO: Check rightness of checking permissions
     @Override
     public void onRequestPermissionsResult(int requestCode, String permissions[], int[] grantResults) {
         switch (requestCode) {

@@ -24,17 +24,19 @@ public class Game {
 
     private final LatLng firstLatLng;
     private final Location firstLocation;
-    private List<LatLng> currentFoxes;
+    //private List<LatLng> currentFoxes;
     private LatLng[] allFoxes;
     private boolean[] foundFoxes;
-    private final float[] inceptionDistanse;
+//    private final float[] inceptionDistanse;
+
 
     public boolean isCompass = Settings.isCompass;
     public boolean isPointer = Settings.isPointer;
     public boolean isAudiosignal = Settings.isAudiosignal;
     public int foxDuration = Settings.foxDuration; // In seconds
-    public float maxFoxDistance = Settings.foxDistance; // In kilometers
-    public byte foxNumber = Settings.foxNumber;
+    private float maxFoxDistance = Settings.foxDistance; // In kilometers
+    public float eraseDistance = Settings.eraseDistance; // In meters
+    private byte foxNumber = Settings.foxNumber;
 
 
     public Game(Location firstLocation) {
@@ -42,25 +44,25 @@ public class Game {
         this.firstLatLng = new LatLng(firstLocation.getLatitude(), firstLocation.getLongitude());
         this.allFoxes = generateRandomLocation(firstLatLng, foxNumber, maxFoxDistance);
         this.foundFoxes = new boolean[foxNumber];
-        this.currentFoxes = new ArrayList<LatLng>();
-        this.inceptionDistanse = new float[foxNumber];
+        //this.currentFoxes = new ArrayList<LatLng>();
+        //this.inceptionDistanse = new float[foxNumber];
 
         for(int i = 0; i < foxNumber; i++){
             foundFoxes[i] = false;
-            inceptionDistanse[i] = getFoxDistance(allFoxes[i], firstLatLng);
+        //    inceptionDistanse[i] = getFoxDistance(allFoxes[i], firstLatLng);
         }
 
 
-        updateCurrentFox();
+        //updateCurrentFox();
     }
 
-    private void updateCurrentFox(){
-        currentFoxes.clear();
-        for(byte i = 0; i < foxNumber; i++){
-            if(!isFoundFox(i))
-                currentFoxes.add(allFoxes[i]);
-        }
-    }
+//    private void updateCurrentFox(){
+//        currentFoxes.clear();
+//        for(byte i = 0; i < foxNumber; i++){
+//            if(!isFoundFox(i))
+//                currentFoxes.add(allFoxes[i]);
+//        }
+//    }
 
     public boolean isFoundFox(byte index){
         return foundFoxes[index];
@@ -70,7 +72,7 @@ public class Game {
         if(foundFoxes[index])
             throw new Exception("That fox is already found!");
         foundFoxes[index] = true;
-        updateCurrentFox();
+        //updateCurrentFox();
     }
 
     private static LatLng[] generateRandomLocation(LatLng firstLatLng, byte foxNumber, float foxDistance) {
@@ -106,9 +108,9 @@ public class Game {
         return allFoxes;
     }
 
-    public List<LatLng> getCurrentFoxes() {
-        return currentFoxes;
-    }
+    //public List<LatLng> getCurrentFoxes() {
+    //    return currentFoxes;
+    //}
 
     @SuppressLint("CommitPrefEdits")
     public void saveIt(Activity activity){
@@ -145,18 +147,14 @@ public class Game {
         return allFound;
     }
 
-    private float getFoxDistance(LatLng foxLatLng, LatLng myLatLng){
+    public float getFoxDistance(LatLng foxLatLng, LatLng myLatLng){
         float[] results = new float[1];
         Location.distanceBetween(foxLatLng.latitude, foxLatLng.longitude, myLatLng.latitude, myLatLng.longitude, results);
-        return results[0];
+        return Math.abs(results[0]);
     }
 
     public float getFoxIntensePercent(LatLng foxLatLng, LatLng myLatLng){
-        //TODO: Do we need distance for each fox?
         float foxDistance = getFoxDistance(foxLatLng, myLatLng);
-        if(foxDistance > maxFoxDistance*1000)
-            return  -(foxDistance - maxFoxDistance*1000)/(maxFoxDistance*1000);
-        else
-            return foxDistance/(1000*maxFoxDistance);
+        return 1 - foxDistance/(1000*maxFoxDistance);
     }
 }
