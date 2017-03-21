@@ -74,6 +74,10 @@ public class MenuActivity extends AppCompatActivity {
         startActivity(new Intent(this, SettingsActivity.class));
     }
 
+    public void onHelp(View view) {
+        startActivity(new Intent(this, HelpActivity.class));
+    }
+
     public void onExit(View view) {
         this.finish();
     }
