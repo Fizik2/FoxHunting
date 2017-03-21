@@ -254,12 +254,14 @@ public class MapsActivity extends FragmentActivity implements
 
     @Override
     public void onLocationChanged(Location location) {
+        Log.e(LOG_TAG, "onLocationChanged");
 
         if (game == null) {
             game = Game.loadTheLastGame(this);
 
             if (game == null)
                 game = new Game(location);
+            return;
         }
 
         currentLatLng = new LatLng(location.getLatitude(), location.getLongitude());
@@ -269,7 +271,7 @@ public class MapsActivity extends FragmentActivity implements
             continueCheckFox = true;
             listenFoxes();
             toStart();
-
+            return;
         }
 
         //If you only need one location, unregister the listener
@@ -280,12 +282,14 @@ public class MapsActivity extends FragmentActivity implements
             if (game != null && !game.areAllFound()) {
                 LatLng[] latLngs = game.getAllFoxes();
                 for (byte i = 0; i < latLngs.length; i++) {
+                    //Log.d(LOG_TAG, "Лиса " + i + " найдена = " + game.isFoundFox(i));
                     if (game.isFoundFox(i)) continue;
-                    Log.e(LOG_TAG, "Distansce to " + i + " fox =" + game.getFoxDistance(latLngs[i], currentLatLng));
+                    //Log.e(LOG_TAG, "Distansce to " + i + " fox =" + game.getFoxDistance(latLngs[i], currentLatLng));
+
                     if (game.getFoxDistance(latLngs[i], currentLatLng) <= game.eraseDistance) {
 
-
                         try {
+                            Log.e(LOG_TAG, "Лиса " + i + " найдена");
                             game.foxFound(i);
                         } catch (Exception e) {
                             e.printStackTrace();
@@ -294,10 +298,15 @@ public class MapsActivity extends FragmentActivity implements
                         mMap.addMarker(new MarkerOptions().position(latLngs[i]));
                         if (game.areAllFound()) break;
 
+                        Log.d(LOG_TAG, "Ура! Лиса " + i + " найдена!");
+                        Log.d(LOG_TAG, "Distansce to " + i + " fox =" + game.getFoxDistance(latLngs[i], currentLatLng));
+                        Log.d(LOG_TAG, "eraseDistance " + game.eraseDistance);
+
+
                         new AlertDialog.Builder(this)
                                 .setIcon(R.drawable.attention512)
                                 .setTitle("Есть!")
-                                .setMessage("Ура! Лиса найдена!")
+                                .setMessage("Ура! Лиса " + (i + 1) + " найдена!")
                                 .setPositiveButton("Ок", null)
                                 .show();
                     }

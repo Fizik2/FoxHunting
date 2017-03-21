@@ -53,25 +53,33 @@ public class SettingsActivity extends AppCompatActivity {
         Settings.isAudiosignal = cbAudioSignal.isChecked();
 
         try {
-            Settings.foxNumber = Byte.parseByte(edtFoxNumber.getText().toString());
+            byte foxNumber = Byte.parseByte(edtFoxNumber.getText().toString());
+            if (foxNumber > 0 && foxNumber < 50)
+                Settings.foxNumber = foxNumber;
         } catch (Exception ex) {
             ex.printStackTrace();
         }
 
         try {
-            Settings.foxDuration = Integer.parseInt(edtFoxDuration.getText().toString());
+            int foxDuration = Integer.parseInt(edtFoxDuration.getText().toString());
+            if (foxDuration > 1 && foxDuration < 600)
+                Settings.foxDuration = foxDuration;
         } catch (Exception ex) {
             ex.printStackTrace();
         }
 
         try {
-            Settings.foxDistance = Float.parseFloat(edtFoxDistance.getText().toString());
+            float foxDistance = Float.parseFloat(edtFoxDistance.getText().toString());
+            if (foxDistance > 0.1 && foxDistance < 20)
+                Settings.foxDistance = foxDistance;
         } catch (Exception ex) {
             ex.printStackTrace();
         }
 
         try {
-            Settings.eraseDistance = Float.parseFloat(edtEraseDistance.getText().toString());
+            float eraseDistance = Float.parseFloat(edtEraseDistance.getText().toString());
+            if(eraseDistance > 0 && eraseDistance < 500)
+                Settings.eraseDistance = eraseDistance;
         } catch (Exception ex) {
             ex.printStackTrace();
         }
